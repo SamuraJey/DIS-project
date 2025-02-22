@@ -73,7 +73,7 @@ Go to http://localhost:8000/
 <summary>Click to expand examples</summary>
 
 ### Home page
-![Home page](assets/home.gif)
+![Home page](assets/home.gif) 
 
 ### Creating a room
 ![Creating a room](assets/create_room.gif)
