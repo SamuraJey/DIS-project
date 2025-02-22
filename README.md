@@ -1,4 +1,4 @@
-# FastAPI + React · [![license](https://img.shields.io/github/license/peaceiris/actions-gh-pages.svg)](LICENSE) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+# FastAPI + React
 
 <div>
 <img src="assets/fastapi-logo.png" alt="fastapi-logo" height="60" />
@@ -21,6 +21,7 @@ A small Web Messenger with **[End-to-End](https://en.wikipedia.org/wiki/End-to-e
 - **[SqlAlchemy](https://www.sqlalchemy.org/)** for ORM
 - **[Pytest](https://docs.pytest.org/en/latest/)** for backend tests
 - **[Prettier](https://prettier.io/)**/**[ESLint](https://eslint.org/)** (Typescript)
+- **Ruff** todo link and configs
 
 ## Docker
 WARNING NOT WORKING FOR NOW
@@ -34,7 +35,7 @@ Go to http://localhost:8000/
 - Run Backend
   - Create virtual environment <br>
       ```bash 
-      python -m venv env
+      python -m venv .venv
       ```
    - Activate virtual environment
        ```bash 
@@ -43,8 +44,12 @@ Go to http://localhost:8000/
        ```
     - Install requirements
        ```bash 
-       pip install -r requirements.txt
+       pip install -r backend/requirements.txt
        ```
+    - Init database
+      ```bash
+      python backend/app/db/init_tables.py
+      ```
     - Run FastAPI server
        ```bash
        cd backend
@@ -52,7 +57,7 @@ Go to http://localhost:8000/
        uvicorn main:app --host '<ip>' --port <port>
        ```
 - Run Frontend
-  - Install all node packages
+  - Install all node packages (and pray that it will work)
     ```bash 
     cd frontend
     npm install
@@ -63,6 +68,9 @@ Go to http://localhost:8000/
     ```
 
 ## Examples
+
+<details>
+<summary>Click to expand examples</summary>
 
 ### Home page
 ![Home page](assets/home.gif)
@@ -92,6 +100,8 @@ Admin can ban users
 ### Deleting a room
 When deleting a room, users and their messages are also deleted
 ![Deleting a room](assets/delete_room.gif)
+
+</details>
 
 
 
