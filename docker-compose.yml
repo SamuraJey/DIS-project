@@ -1,0 +1,33 @@
+services:
+  web-messenger-backend:
+    container_name: web-messenger-backend
+    image: kek/web-messenger-backend:latest
+    build: ./backend
+    ports:
+      - 9000:8000
+    restart: unless-stopped
+    networks:
+        app:
+            ipv4_address: 172.16.238.10 
+    
+  web-messenger-frontend:
+    depends_on:
+      - web-messenger-backend
+    container_name: web-messenger-frontend
+    image: kek/web-messenger-frontend:latest
+    build: ./frontend
+    ports:
+      - 8000:3000
+    networks:
+        app:
+            ipv4_address: 172.16.238.11 
+    restart: unless-stopped
+
+networks:
+    app:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.16.238.0/24
+                  gateway: 172.16.238.1
