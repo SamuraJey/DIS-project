@@ -42,18 +42,24 @@ async def room_password_auth(
     msg_key = decoder.get_key(authorization) if authorization else ""
     data = pydantic_decoder(auth)
     username, password = data["username"], data["password"]
-    hased_name = parser.parse_link_hash(name)
+    hased_name = parser.parse_link_hash(name)  # TODO hashed
     room = database.get_room_by_name(hased_name)
+    print(username, password)
     if decoder.verify_hash(password, room.password):
-        if x_token:
+        print("Password verified")  # ADDED
+        if x_token: # TODO А зачем нам этот x-token
+            print("Verifying token")  # ADDED
             if decoder.verify_hash(username, x_token):
+                print("Token verified")  # ADDED
                 user = database.get_user_by_name(username, room.id)
             else:
+                print("Invalid token")  # ADDED
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={"Status": "Invalid username or password"},
+                    detail={"Status": "Invalid username or password KEK"},
                 )
         else:
+            print("Creating user")  # ADDED
             user = database.create_user(username, False, room)
         sessionCookie = encoder.encode_session(
             hased_name, user.id, room.id, user.admin, msg_key
@@ -67,6 +73,7 @@ async def room_password_auth(
                 "X-Token": encoder.hash_text(username),
             },
         )
+    print("POLNAYA JOPA")  # ADDED
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail={"Error": "Invalid username or password"},
@@ -80,8 +87,10 @@ async def room(
     authorization: Optional[str] = Header(None),
     csrf_protect: CsrfProtect = Depends(),
 ) -> JSONResponse or HTTPException:
+    print("Room request")  # ADDED
     hashed_name, room, user = parser.get_room_data(name, authorization)
     if decoder.verify_session(hashed_name, authorization, user.status):
+        print("Session verified")  # ADDED
         enc_messages, messages = database.get_all_messages(room), []
         for message in enc_messages:
             messages.append(
@@ -105,6 +114,7 @@ async def room(
                 "X-Token": encoder.hash_text(user.name),
             },
         )
+    print("Session verification failed!")  # ADDED
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail={"Status": "Invalid session"},
@@ -143,8 +153,12 @@ async def delete_room(
 async def websocket_endpoint(
     websocket: WebSocket, name: str, session: Optional[str] = Query(None)
 ) -> None:
+    print(f"WebSocket connection attempt: name={name}, session={session}")  # ADDED
     hashed_name, room_obj, user = parser.get_room_data(name, session)
-    if decoder.verify_session(hashed_name, session, user.status):
+    print(f"Hashed name: {hashed_name}")  # ADDED
+    is_session_valid = decoder.verify_session(hashed_name, session, user.status)  # ADDED
+    print(f"Session valid: {is_session_valid}")  # ADDED
+    if is_session_valid:
         decoded_session = decoder.decode_session(session)
         manager.append_room(name, Room(name))
         connection = Connection(user.name, session, websocket)
@@ -165,9 +179,14 @@ async def websocket_endpoint(
                             "user": user,
                         }
                     )
-            except WebSocketDisconnect:
+            except WebSocketDisconnect as e:
                 await room.disconnect(connection)
                 manager.close_room(name)
                 await room.broadcast(202, f"{user.name} left chat", user.name)
-        except RuntimeError:
+                print(f"websocket connection closed: {e}")
+        except RuntimeError as e:
             manager.delete_connections(name)
+            print(f"runtime error: {e}")
+    else:  # ADDED
+        print("Session verification failed!")  # ADDED
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)  # ADDED
