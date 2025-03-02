@@ -85,12 +85,18 @@ const Room: React.FC = () => {
       time: string;
     };
     const ws = new WebSocket(
-      `ws://localhost:9000/api/v1${ReqSettings.url}?session=${ReqSettings.session}`
+      `ws://${process.env.REACT_APP_API_HOST || 'localhost'}:${process.env.REACT_APP_API_PORT || '9000'}/api/v1${ReqSettings.url}?session=${ReqSettings.session}`
     );
-    ws.onopen = (e) => {};
+    ws.onopen = (e) => {
+      console.log("WebSocket connected");
+    };
     ws.onclose = (event: CloseEvent) => {
+      console.log("WebSocket closed:", event); // ADDED
       setWsError(true);
       setAnimMsg("Connection closed!");
+    };
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error); // ADDED
     };
     ws.onmessage = (event: MessageEvent) => {
       const response: wsResponse = JSON.parse(event.data);
@@ -99,6 +105,7 @@ const Room: React.FC = () => {
       // @ts-ignore
       let wsFunc = wsFunctions[result.typeWs];
       wsFunc(result.response, messagesGet);
+      console.log(result);
     };
     setWsMsg(ws);
   };
